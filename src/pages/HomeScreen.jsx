@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import TravelSlider from "../components/TravelSlider";
 import {
@@ -13,6 +13,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import useFlightSearch from "../hooks/post"; // ✅ import your hook
 
+function useQuery() {
+  return new URLSearchParams(window.location.search);
+}
+
 const AIRPORTS = [
   {
     code: "DAR",
@@ -23,6 +27,11 @@ const AIRPORTS = [
 ];
 
 export default function TravelHome() {
+  const q = useQuery();
+
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
+  
   // show only once after fresh login
   const [showSlider, setShowSlider] = useState(false);
 
@@ -88,10 +97,43 @@ export default function TravelHome() {
     }
   };
 
+  / Location
+  const [location, setLocation] = useState({ lat: null, lng: null });
+
+  useEffect(() => {
+    const t = q.get("token");
+    const u = q.get("user");
+
+    if (t) setToken(t);
+    if (u) {
+      try {
+        setUser(JSON.parse(decodeURIComponent(u)));
+      } catch {
+        setUser(null);
+      }
+    }
+  }, []);
+
+  // Receive data from React Native
+  useEffect(() => {
+    window.onNativeMessage = (msg) => {
+      if (msg.type === "AUTH_DATA") {
+        setToken(msg.token);
+        setUser(msg.user);
+      }
+    };
+
+    if (!token && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "REQUEST_AUTH_DATA" })
+      );
+    }
+  }, [token]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center">
       <div className="w-full max-w-md">
-        <Header title="Home" user={'user'} />
+        <Header title="Home" user={user?.name ? user.name : "User"} />
         {showSlider && <TravelSlider onFinish={() => setShowSlider(false)} />}
 
         {/* banner */}
@@ -329,6 +371,7 @@ export default function TravelHome() {
     </div>
   );
 }
+
 
 
 
