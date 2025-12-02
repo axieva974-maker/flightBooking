@@ -91,7 +91,7 @@ export default function TravelHome() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center">
       <div className="w-full max-w-md">
-        <Header />
+        <Header title="Home" user={'user'} />
         {showSlider && <TravelSlider onFinish={() => setShowSlider(false)} />}
 
         {/* banner */}
@@ -329,6 +329,7 @@ export default function TravelHome() {
     </div>
   );
 }
+
 
 
 
