@@ -378,7 +378,7 @@ function Home() {
   const q = useQuery();
 
   const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null); // MERGED USER STATE
+  const [user, setUser] = useState(null);
 
   const [busCount, setBusCount] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
@@ -398,7 +398,6 @@ function Home() {
   // Location
   const [location, setLocation] = useState({ lat: null, lng: null });
 
-  // ========== READ TOKEN + USER FROM URL ==========
   useEffect(() => {
     const t = q.get("token");
     const u = q.get("user");
@@ -413,12 +412,12 @@ function Home() {
     }
   }, []);
 
-  // ========== RECEIVE DATA FROM REACT NATIVE WEBVIEW ==========
+  // Receive data from React Native
   useEffect(() => {
     window.onNativeMessage = (msg) => {
       if (msg.type === "AUTH_DATA") {
         setToken(msg.token);
-        setUser(msg.user); // MERGED
+        setUser(msg.user);
       }
     };
 
@@ -429,7 +428,7 @@ function Home() {
     }
   }, [token]);
 
-  // ========== LOGOUT ==========
+  // ------- LOGOUT (tell RN) -------
   const sendLogout = () => {
     if (window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage(
@@ -440,7 +439,24 @@ function Home() {
     }
   };
 
-  // ========== LOCATION ==========
+  // ------- Request Camera (RN or Browser) -------
+  const requestCamera = () => {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "REQUEST_CAMERA" })
+      );
+    } else {
+      startCamera(); // browser fallback
+    }
+  };
+
+  // ------- Page Load Initial Data -------
+  useEffect(() => {
+    setBusCount(Math.floor(Math.random() * 50) + 1);
+    //setImageUrl("https://picsum.photos/600/300");
+  }, []);
+
+  // ------- Location -------
   const handleGetLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -453,7 +469,7 @@ function Home() {
     );
   };
 
-  // ========== CAMERA (WEB FALLBACK) ==========
+  // ------- Camera -------
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -464,17 +480,7 @@ function Home() {
     }
   };
 
-  const requestCamera = () => {
-    if (window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "REQUEST_CAMERA" })
-      );
-    } else {
-      startCamera(); 
-    }
-  };
-
-  // ========== AUDIO RECORDING ==========
+  // ------- Audio -------
   const startAudioRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioRecorder.current = new MediaRecorder(stream);
@@ -494,11 +500,11 @@ function Home() {
     audioRecorder.current.stop();
   };
 
-  // ========== VIDEO RECORDING ==========
+  // ------- Video -------
   const startVideoRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
       video: true,
+      audio: true,
     });
 
     videoRecorder.current = new MediaRecorder(stream);
@@ -518,11 +524,6 @@ function Home() {
     videoRecorder.current.stop();
   };
 
-  // ========== INITIAL PAGE DATA ==========
-  useEffect(() => {
-    setBusCount(Math.floor(Math.random() * 50) + 1);
-  }, []);
-
   return (
     <div>
       {/* ======================= HEADER ======================= */}
@@ -540,7 +541,7 @@ function Home() {
           zIndex: 1000,
         }}
       >
-        Hi, {user?.name ? user.name : "User"}
+       Hi, {user?.name ? user.name : "User"}
       </div>
 
       {/* ======================= PAGE BODY ======================= */}
@@ -555,7 +556,6 @@ function Home() {
           <button className="btn btn-primary" onClick={handleGetLocation}>
             Get Location
           </button>
-
           {location.lat && (
             <p className="mt-2">
               Latitude: {location.lat} <br />
