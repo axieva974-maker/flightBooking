@@ -3,13 +3,53 @@ import Header from "../components/Header";
 import { FaPlane } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+function useQuery() {
+  return new URLSearchParams(window.location.search);
+}
+
 const Profile = () => {
   const navigate = useNavigate();
+  const q = useQuery();
+
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
 
   const user = {
     name: "Anubhav",
     mobile: "+91 9917677253",
   };
+
+
+  useEffect(() => {
+    const t = q.get("token");
+    const u = q.get("user");
+
+    if (t) setToken(t);
+    if (u) {
+      try {
+        setUser(JSON.parse(decodeURIComponent(u)));
+      } catch {
+        setUser(null);
+      }
+    }
+  }, []);
+
+  // Receive data from React Native
+  useEffect(() => {
+    window.onNativeMessage = (msg) => {
+      if (msg.type === "AUTH_DATA") {
+        setToken(msg.token);
+        setUser(msg.user);
+      }
+    };
+
+    if (!token && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "REQUEST_AUTH_DATA" })
+      );
+    }
+  }, [token]);
+
 
   const handleLogout = () => {
     localStorage.removeItem("loggedIn");
@@ -114,7 +154,7 @@ const Profile = () => {
 
         {/* Profile Card */}
         <div className="profile-info">
-          <h2 className="profile-name">{user.name}</h2>
+          <h2 className="profile-name">{user?.name ? user.name : "User"}</h2>
           <p className="profile-number">{user.mobile}</p>
 
           <div className="profile-links" style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
@@ -130,3 +170,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
