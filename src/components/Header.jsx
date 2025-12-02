@@ -7,8 +7,8 @@ export default function Header({ title = "Travel Booking", showBack = false, use
 
   return (
     <div className="w-full bg-white text-black py-4 px-6 text-lg font-semibold shadow-md flex items-center justify-between">
-      
-      {/* LEFT SIDE: BACK + TITLE */}
+
+      {/* Left Section: Back + Title */}
       <div className="flex items-center">
         {showBack && (
           <button
@@ -21,10 +21,14 @@ export default function Header({ title = "Travel Booking", showBack = false, use
         <span>{title}</span>
       </div>
 
-      {/* RIGHT SIDE: USER NAME */}
-      <div className="text-right text-sm font-medium text-gray-700">
-        {user?.name ? user.name : ""}
+      {/* Right Section: Username */}
+      <div className="text-sm font-medium text-gray-700">
+        {/* {user?.name ? user.name : ""} */}
+         <span>{user}</span>
       </div>
+
     </div>
   );
 }
+
+
