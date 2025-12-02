@@ -97,7 +97,7 @@ export default function TravelHome() {
     }
   };
 
-  / Location
+  // Location
   const [location, setLocation] = useState({ lat: null, lng: null });
 
   useEffect(() => {
@@ -371,6 +371,7 @@ export default function TravelHome() {
     </div>
   );
 }
+
 
 
 
